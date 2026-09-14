@@ -621,12 +621,28 @@ document.getElementById('downloadBtn').addEventListener('click', async (e) => {
 document.getElementById('igBtn').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
   btn.disabled = true;
+  
   try {
     const canvas = await buildExportCanvas();
-    triggerDownload(canvas);
-    showToast('Simpen gambar ini, terus share ke Instagram Story kamu! Buka IG → Story → pilih gambar ti galeri.');
+    const blob = await canvasToBlob(canvas);
+    const file = new File([blob], 'warna-poe-lahir.png', { type: 'image/png' });
+
+    // Jika browser HP mendukung Web Share API untuk File
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: 'Warna Poé Lahir',
+      });
+      showToast('Pilih Instagram dina menu bagikeun!');
+    } else {
+      // Fallback jika dibuka dari browser desktop/browser lama
+      triggerDownload(canvas);
+      showToast('Simpen gambar ini, terus share ke Instagram Story kamu! Buka IG → Story → pilih gambar ti galeri.');
+    }
   } catch (err) {
-    showToast('Ada yang salah waktu bikin gambar. Cobain lagi yah.');
+    if (err.name !== 'AbortError') {
+      showToast('Aya kasalahan. Cobain deui nya.');
+    }
   } finally {
     btn.disabled = false;
   }

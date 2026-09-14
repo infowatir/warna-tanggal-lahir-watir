@@ -580,6 +580,10 @@ ratioBtns.forEach(btn => {
 document.querySelector('.ratio-btn[data-ratio="916"]').classList.add('bg-gold', 'text-ink', 'border-gold');
 
 /* ---------- export image ---------- */
+function canvasToBlob(canvas) {
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+}
+
 async function buildExportCanvas() {
   const exportCard = document.getElementById('exportCard');
   if (currentRatio === '916') {
@@ -593,23 +597,52 @@ async function buildExportCanvas() {
   return html2canvas(exportCard, { backgroundColor: null, scale: 1, useCORS: true });
 }
 
-function triggerDownload(canvas) {
+async function handleImageExport() {
+  const canvas = await buildExportCanvas();
+  const blob = await canvasToBlob(canvas);
+  const fileName = currentResult 
+    ? `warna-poe-lahir-${currentResult.name.toLowerCase().replace(/\s+/g, '-')}.png` 
+    : 'warna-poe-lahir.png';
+  const file = new File([blob], fileName, { type: 'image/png' });
+
+  // 1. Prioritas Utama iOS/Android: Pakai Native Web Share API
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: 'Warna Poé Lahir',
+        text: 'Ieu warna poé lahir kuring!',
+      });
+      showToast('Gambar siap disimpan atanapi dibagikeun!');
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return; // User membatalkan dialog share
+    }
+  }
+
+  // 2. Fallback untuk Desktop & Browser yang Blokir Download Otomatis
+  const imageUrl = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  const fname = currentResult ? `warna-poe-lahir-${currentResult.name.toLowerCase().replace(/\s+/g, '-')}.png` : 'warna-poe-lahir.png';
-  link.download = fname;
-  link.href = canvas.toDataURL('image/png');
+  link.download = fileName;
+  link.href = imageUrl;
+  
+  // Coba unduh standar
   link.click();
+
+  // Fallback khusus jika iOS Safari menolak tautan unduh
+  setTimeout(() => {
+    window.open(imageUrl, '_blank');
+    showToast('Tahan gambar dina layar anyar, teras pilih "Simpan ke Foto / Save Image".');
+  }, 600);
 }
 
+// Event Listener Tombol Unduh
 document.getElementById('downloadBtn').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
-  const originalText = btn.textContent;
   btn.textContent = 'Nyiapkeun gambar…';
   btn.disabled = true;
   try {
-    const canvas = await buildExportCanvas();
-    triggerDownload(canvas);
-    showToast('Gambar udah ke download! Cepetan Share!.');
+    await handleImageExport();
   } catch (err) {
     showToast('Ada yang salah waktu bikin gambar. Cobain lagi yah.');
   } finally {
@@ -618,6 +651,20 @@ document.getElementById('downloadBtn').addEventListener('click', async (e) => {
   }
 });
 
+// Event Listener Tombol IG Story
+document.getElementById('igBtn').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  try {
+    await handleImageExport();
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      showToast('Aya kasalahan. Cobain deui nya.');
+    }
+  } finally {
+    btn.disabled = false;
+  }
+});
 document.getElementById('igBtn').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
   btn.disabled = true;

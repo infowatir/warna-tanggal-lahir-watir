@@ -609,9 +609,9 @@ document.getElementById('downloadBtn').addEventListener('click', async (e) => {
   try {
     const canvas = await buildExportCanvas();
     triggerDownload(canvas);
-    showToast('Gambar geus kaunduh! Ayeuna tinggal dibagikeun.');
+    showToast('Gambar udah ke download! Cepetan Share!.');
   } catch (err) {
-    showToast('Aya kasalahan waktu nyieun gambar. Cobian deui nya.');
+    showToast('Ada yang salah waktu bikin gambar. Cobain lagi yah.');
   } finally {
     btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5V11M8 11L4.5 7.5M8 11L11.5 7.5M2.5 13.5H13.5" stroke="#16241C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Unduh Gambar';
     btn.disabled = false;
@@ -624,9 +624,9 @@ document.getElementById('igBtn').addEventListener('click', async (e) => {
   try {
     const canvas = await buildExportCanvas();
     triggerDownload(canvas);
-    showToast('Simpen gambar ieu, terus bagikeun ka Instagram Story anjeun! Buka IG → Story → pilih gambar ti galeri.');
+    showToast('Simpen gambar ini, terus share ke Instagram Story kamu! Buka IG → Story → pilih gambar ti galeri.');
   } catch (err) {
-    showToast('Aya kasalahan waktu nyieun gambar. Cobian deui nya.');
+    showToast('Ada yang salah waktu bikin gambar. Cobain lagi yah.');
   } finally {
     btn.disabled = false;
   }
@@ -635,7 +635,7 @@ document.getElementById('igBtn').addEventListener('click', async (e) => {
 document.getElementById('threadsBtn').addEventListener('click', () => {
   if (!currentResult) return;
   const pageUrl = window.location.href.split('?')[0];
-  const text = `Warna ulang taun kuring nyaéta ${currentResult.name} (${currentResult.hex})! Pariksa warna anjeun di ${pageUrl}`;
+  const text = `Warna ulang taun aku adalah ${currentResult.name} (${currentResult.hex})! Cek warna kamu di ${pageUrl}`;
   const intent = `https://www.threads.net/intent/post?text=${encodeURIComponent(text)}`;
   window.open(intent, '_blank', 'noopener,noreferrer');
 });
